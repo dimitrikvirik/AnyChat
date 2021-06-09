@@ -1,15 +1,19 @@
 package git.dimitrikvirik.anychat.model.entity;
 
+import git.dimitrikvirik.anychat.model.Role;
+import git.dimitrikvirik.anychat.model.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Check;
+import org.hibernate.annotations.ColumnDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.*;
 import javax.validation.Constraint;
-import javax.validation.constraints.NotBlank;
+import java.time.LocalDate;
 import java.util.Date;
 
 @NoArgsConstructor
@@ -29,14 +33,19 @@ public class User {
     @Column(name = "username")
     private String username;
     @Column(name = "lastname")
-    @NotBlank
     private String lastname;
     @Column(name = "age")
     private int age;
     @Column(name = "password")
     private String password;
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role =  Role.USER;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.ACTIVE;
     @Column(name = "reg_date")
-    private Date regDate;
+    private LocalDate regDate = LocalDate.now();
     @Column(name = "edit_date")
     private Date editDate;
 

@@ -3,6 +3,9 @@ package git.dimitrikvirik.anychat.model.mapper;
 import git.dimitrikvirik.anychat.model.dto.UserDTO;
 import git.dimitrikvirik.anychat.model.entity.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserMapper {
     public static UserDTO toUserDTO(User user){
         UserDTO userDTO = new UserDTO();
@@ -10,6 +13,12 @@ public class UserMapper {
         userDTO.setUsername(user.getUsername());
         userDTO.setFirstname(user.getFirstname());
         userDTO.setLastname(user.getLastname());
+        userDTO.setId(user.getId());
        return userDTO;
+    }
+    public static List<UserDTO> toUserDTOList(List<User> userList){
+        List<UserDTO> userDTOList = new ArrayList<>();
+        userList.forEach((user -> {userDTOList.add(UserMapper.toUserDTO(user));}));
+        return userDTOList;
     }
 }
