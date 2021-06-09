@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Getter
 public enum Role {
-    USER(Set.of(Permission.USER_READ, Permission.USER_WRITE)),
-    ADMIN(Set.of(Permission.USER_READ, Permission.USER_WRITE, Permission.USER_DELETE));
+    USER(Set.of(Permission.USER_READ, Permission.USER_WRITE, Permission.USER_EDIT)),
+    ADMIN(Set.of(Permission.USER_READ, Permission.USER_WRITE, Permission.USER_EDIT, Permission.USER_DELETE));
     private final Set<Permission> permissionSet;
 
     public Set<SimpleGrantedAuthority> getAuthorizes(){

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -40,14 +41,14 @@ public class UserService {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             User user = userRepository
                     .findByUsername(request.getUsername())
-                    .orElseThrow( ()-> new RecordNotFoundException("User not found"));
+                    .orElseThrow( ()-> new UsernameNotFoundException("User not found"));
             String token = jwtTokenProvider.createToken(request.getUsername(), user.getRole().name());
             Map<Object, Object> response =  new HashMap<>();
             response.put("username", request.getUsername());
             response.put("token", token);
             return ResponseEntity.ok(response);
         }
-        catch (AuthenticationException | RecordNotFoundException e){
+        catch (AuthenticationException e){
             return new ResponseEntity<>("Invalid email/password combination", HttpStatus.FORBIDDEN);
         }
     }
@@ -55,7 +56,7 @@ public class UserService {
 
 
 
-    @Transactional(dontRollbackOn = RecordAlreadyExistException.class)
+    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
      public User create(User user) throws RecordException {
         try {
             user.setPassword(SecurityConfig.passwordEncoder().encode(user.getPassword()));
@@ -67,21 +68,34 @@ public class UserService {
         }
         return null;
     }
-
-
+    @Transactional
     public List<User> getAll() {
        return userRepository.findAll();
     }
-
+    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
     public User getById(int id) throws RecordNotFoundException {
         var optionalUser = userRepository.findById(id);
        if(optionalUser.isPresent()){
          return   optionalUser.get();
        }
-       else throw new RecordNotFoundException(String.format("User with id %s not found!", id));
+       else throw new RecordNotFoundException(String.format("User with id %d not found!", id));
     }
-
-    public void deleteById(int id) {
-        userRepository.deleteById(id);
+    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
+    public void deleteById(int id) throws RecordNotFoundException {
+        try {
+            userRepository.deleteById(id);
+        }catch (DataIntegrityViolationException e){
+            throw new RecordNotFoundException(String.format("User with id %d not found!", id));
+        }
+    }
+    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
+    public User editById(User user, int id) throws RecordNotFoundException {
+        try {
+            user.setId(id);
+         return  userRepository.save(user);
+        }
+        catch (DataIntegrityViolationException e){
+            throw new RecordNotFoundException(String.format("User with id %d not found!", id));
+        }
     }
 }

@@ -12,11 +12,8 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    private long id;
     private String username;
     private String firstname;
     private String lastname;
     private int age;
-
-
 }

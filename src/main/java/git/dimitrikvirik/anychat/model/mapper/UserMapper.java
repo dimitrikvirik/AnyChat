@@ -21,4 +21,13 @@ public class UserMapper {
         userList.forEach((user -> {userDTOList.add(UserMapper.toUserDTO(user));}));
         return userDTOList;
     }
+    public static User toUser(UserDTO userDTO){
+        User user = new User();
+        user.setAge(userDTO.getAge());
+        user.setUsername(userDTO.getUsername());
+        user.setFirstname(userDTO.getFirstname());
+        user.setLastname(userDTO.getLastname());
+        user.setId(userDTO.getId());
+        return user;
+    }
 }
