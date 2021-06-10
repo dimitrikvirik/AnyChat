@@ -5,7 +5,11 @@ import git.dimitrikvirik.anychat.Exception.RecordException;
 import git.dimitrikvirik.anychat.Exception.RecordNotFoundException;
 import git.dimitrikvirik.anychat.config.SecurityConfig;
 import git.dimitrikvirik.anychat.model.dto.UserAuthDTO;
+import git.dimitrikvirik.anychat.model.entity.Role;
+import git.dimitrikvirik.anychat.model.entity.Status;
 import git.dimitrikvirik.anychat.model.entity.User;
+import git.dimitrikvirik.anychat.repository.RoleRepository;
+import git.dimitrikvirik.anychat.repository.StatusRepository;
 import git.dimitrikvirik.anychat.repository.UserRepository;
 import git.dimitrikvirik.anychat.security.JwtTokenProvider;
 import lombok.AllArgsConstructor;
@@ -17,13 +21,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.transaction.Transactional;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -33,69 +33,105 @@ public class UserService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final StatusRepository statusRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
 
-    public ResponseEntity<?> authentication(@RequestBody UserAuthDTO request){
+    @Transactional
+    public ResponseEntity<?> authentication(UserAuthDTO request){
         try{
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+            System.out.println(request);
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             User user = userRepository
                     .findByUsername(request.getUsername())
                     .orElseThrow( ()-> new UsernameNotFoundException("User not found"));
-            String token = jwtTokenProvider.createToken(request.getUsername(), user.getRole().name());
+            String token = jwtTokenProvider.createToken(request.getUsername(), user.getRole().getName());
             Map<Object, Object> response =  new HashMap<>();
             response.put("username", request.getUsername());
             response.put("token", token);
             return ResponseEntity.ok(response);
         }
         catch (AuthenticationException e){
+            e.printStackTrace();
             return new ResponseEntity<>("Invalid email/password combination", HttpStatus.FORBIDDEN);
         }
     }
 
-
-
-
     @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
-     public User create(User user) throws RecordException {
+     public User registration(User user) throws RecordException {
         try {
             user.setPassword(SecurityConfig.passwordEncoder().encode(user.getPassword()));
-            userRepository.save(user);
+            user.setRegDate(new Date());
+            user.setStatus(statusRepository.getByName("ACTIVE"));
+            user.setRole(roleRepository.getByName("USER"));
+            return userRepository.save(user);
         }catch (DataIntegrityViolationException e){
             if(Objects.requireNonNull(e.getMessage()).contains("c_username_unique"))
             throw new RecordAlreadyExistException(String.format("User with username %s already exist!", user.getUsername()));
             else throw e;
         }
-        return null;
     }
     @Transactional
     public List<User> getAll() {
        return userRepository.findAll();
     }
+
     @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
-    public User getById(int id) throws RecordNotFoundException {
-        var optionalUser = userRepository.findById(id);
-       if(optionalUser.isPresent()){
-         return   optionalUser.get();
-       }
-       else throw new RecordNotFoundException(String.format("User with id %d not found!", id));
-    }
-    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
-    public void deleteById(int id) throws RecordNotFoundException {
+    public void setUserStatusByUsername(String username, String status) throws RecordNotFoundException {
         try {
-            userRepository.deleteById(id);
+            Status realStatus = statusRepository.getByName(status);
+            userRepository.setStatusByUsername(realStatus, username);
         }catch (DataIntegrityViolationException e){
-            throw new RecordNotFoundException(String.format("User with id %d not found!", id));
+            throw new RecordNotFoundException(String.format("User with username %s not found!", username));
         }
     }
     @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
-    public User editById(User user, int id) throws RecordNotFoundException {
+    public void setUserRoleByUsername(String username, String role) throws RecordNotFoundException {
         try {
-            user.setId(id);
-         return  userRepository.save(user);
+            Role realRole = roleRepository.getByName(role);
+            userRepository.setRoleByUsername(realRole, username);
+        }catch (DataIntegrityViolationException e){
+            throw new RecordNotFoundException(String.format("User with username %s not found!", username));
+        }
+    }
+
+    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
+    public void forceDeleteByUsername(String username) throws RecordNotFoundException {
+        try {
+            userRepository.deleteByUsername(username);
+        }catch (DataIntegrityViolationException e){
+            throw new RecordNotFoundException(String.format("User with username %s not found!", username));
+        }
+    }
+
+    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
+    public void editByUsername(User user, String username) throws RecordNotFoundException {
+        try {
+         user.setUsername(username);
+         user.setPassword(
+                    SecurityConfig.passwordEncoder().encode(user.getPassword())
+            );
+         userRepository.setUserByUsername(
+                user.getFirstname(),
+                user.getLastname(),
+                user.getPassword(),
+                user.getAge(),
+                new Date(),
+                username);
         }
         catch (DataIntegrityViolationException e){
-            throw new RecordNotFoundException(String.format("User with id %d not found!", id));
+            throw new RecordNotFoundException(String.format("User with username %s not found!", username));
         }
+    }
+
+    @Transactional(dontRollbackOn = DataIntegrityViolationException.class)
+    public User getByUsername(String username) throws RecordNotFoundException {
+        var optionalUser = userRepository.findByUsername(username);
+        if(optionalUser.isPresent()){
+            return  optionalUser.get();
+        }
+        else throw new RecordNotFoundException(String.format("User with username %s not found!", username));
     }
 }

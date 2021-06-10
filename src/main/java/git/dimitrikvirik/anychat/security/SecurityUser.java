@@ -1,24 +1,31 @@
 package git.dimitrikvirik.anychat.security;
 
-import git.dimitrikvirik.anychat.model.Status;
+
+import git.dimitrikvirik.anychat.model.entity.Status;
 import git.dimitrikvirik.anychat.model.entity.User;
+import git.dimitrikvirik.anychat.repository.StatusRepository;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
-
 public class SecurityUser implements UserDetails {
     private final String username;
     private final String password;
     private final List<SimpleGrantedAuthority> authorityList;
     private final boolean isActive;
+    private   User user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -55,13 +62,17 @@ public class SecurityUser implements UserDetails {
         return isActive;
     }
 
+
+
     public static UserDetails fromUser(User user){
+
+        Status status = user.getStatus();
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(), user.getPassword(),
-                user.getStatus().equals(Status.ACTIVE),
-                user.getStatus().equals(Status.ACTIVE),
-                user.getStatus().equals(Status.ACTIVE),
-                user.getStatus().equals(Status.ACTIVE),
+                user.getStatus().equals(status),
+                user.getStatus().equals(status),
+                user.getStatus().equals(status),
+                user.getStatus().equals(status),
                 user.getRole().getAuthorizes()
         );
     }
