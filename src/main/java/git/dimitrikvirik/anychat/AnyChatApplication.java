@@ -13,5 +13,6 @@ public class AnyChatApplication {
         SpringApplication.run(AnyChatApplication.class, args);
     }
 
+
 }
 

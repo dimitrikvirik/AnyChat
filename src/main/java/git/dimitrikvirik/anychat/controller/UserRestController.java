@@ -1,10 +1,12 @@
 package git.dimitrikvirik.anychat.controller;
 
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import git.dimitrikvirik.anychat.model.entity.User;
 import git.dimitrikvirik.anychat.model.param.UserDetailsForm;
 import git.dimitrikvirik.anychat.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,8 @@ public class UserRestController {
         return "Checking... For Developer";
     }
 
+
+
     @PreAuthorize("hasRole('user')")
     @GetMapping("/check")
     public String check(Principal principal){
@@ -37,20 +41,15 @@ public class UserRestController {
     }
     @PreAuthorize("hasRole('user')")
     @GetMapping
-    public Map currentUser(Principal principal){
-        try {
+    public Map currentUser(Principal principal) throws Exception {
+            User user = userService.getCurrentUser(principal.getName());
             ObjectMapper objectMapper = new ObjectMapper();
-        return  objectMapper.convertValue(userService.getCurrentUser(principal.getName()), Map.class);
-        }catch (Exception e){
-            return null;
-        }
+         return  objectMapper.convertValue(user, Map.class);
     }
-    @GetMapping("/create")
-    public User createUser(@RequestParam String country, @RequestParam String city, @RequestParam String phone,Principal principal){
-        UserDetailsForm userDetailsForm = new UserDetailsForm(country, city, phone);
-        User user =  userService.create(principal.getName(), userDetailsForm);
-        System.out.println(user);
-        return user;
+    @PostMapping("/create")
+    public String createuser(@RequestBody UserDetailsForm userDetailsForm, Principal principal){
+        userService.create(principal.getName(), userDetailsForm);
+        return  "success";
     }
 
 

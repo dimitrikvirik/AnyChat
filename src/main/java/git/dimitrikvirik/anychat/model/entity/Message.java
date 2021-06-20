@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.Date;
 
+
 @Table(name = "MESSAGE", schema = "chat")
 @Entity
 @AllArgsConstructor
