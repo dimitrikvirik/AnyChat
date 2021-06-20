@@ -64,13 +64,12 @@ class KeycloakConfig extends KeycloakWebSecurityConfigurerAdapter {
         Keycloak keycloak = KeycloakBuilder
                 .builder()
                 .serverUrl("http://localhost:8080/auth")
-                .realm("appsdeveloperblog")
+                .realm("master")
                 .username("admin")
                 .password("admin")
-                .clientId("cc14eea8-07ed-48d4-b81c-aaba158dcf28")
+                .clientId("admin-cli")
                 .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build())
                 .build();
-
         return keycloak;
     }
 
