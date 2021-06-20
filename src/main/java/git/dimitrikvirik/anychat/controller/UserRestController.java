@@ -8,6 +8,7 @@ import git.dimitrikvirik.anychat.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class UserRestController {
     UserService userService;
     
 
-    @PreAuthorize("hasRole('developer')")
+    @PreAuthorize("hasRole('developerero')")
     @GetMapping("/check/dev")
     public String checkForDeveloper(){
         return "Checking... For Developer";
@@ -32,19 +33,16 @@ public class UserRestController {
 
 
 
-    @PreAuthorize("hasRole('user')")
-    @GetMapping("/check")
-    public String check(Principal principal){
-        JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) principal;
 
-        return    jwtAuthenticationToken.getTokenAttributes().get("email").toString();
-    }
-    @PreAuthorize("hasRole('user')")
     @GetMapping
-    public Map currentUser(Principal principal) throws Exception {
+    public Map currentUser(Principal principal) {
+        try {
             User user = userService.getCurrentUser(principal.getName());
             ObjectMapper objectMapper = new ObjectMapper();
-         return  objectMapper.convertValue(user, Map.class);
+            return objectMapper.convertValue(user, Map.class);
+        }catch (Exception e){
+            return  null;
+        }
     }
     @PostMapping("/create")
     public String createuser(@RequestBody UserDetailsForm userDetailsForm, Principal principal){

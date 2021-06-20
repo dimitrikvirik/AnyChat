@@ -3,11 +3,14 @@ package git.dimitrikvirik.anychat.controller;
 import git.dimitrikvirik.anychat.facade.MessageFacade;
 import git.dimitrikvirik.anychat.model.dto.MessageDTO;
 import git.dimitrikvirik.anychat.service.MessageService;
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -35,9 +38,16 @@ public class MessageRestController {
     @PreAuthorize("hasRole('admin')")
     @GetMapping("/all")
     public List<Map<String, Object>> getAllMessage() throws Exception {
+
         var msgs =  messageFacade.getAll();
         System.out.println(msgs);
         return  msgs;
+    }
+    @PreAuthorize("hasRole('admin')")
+    @DeleteMapping("/del/{id}")
+    public String delete(@PathVariable long id){
+        messageService.delete(id);
+        return "success";
     }
 
 

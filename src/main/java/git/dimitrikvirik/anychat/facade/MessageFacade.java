@@ -28,24 +28,21 @@ public class MessageFacade {
 
     public List<Map<String, Object>> getAll() throws Exception {
       List<Message> messageList = messageService.getAll();
-      List<Map<String,Object>> messageDTOS = new ArrayList<>();
+      List<Map<String,Object>> messages = new ArrayList<>();
         ObjectMapper objectMapper=  new ObjectMapper();
         for (Message message : messageList) {
-            MessageDTO messageDTO = new MessageDTO();
-            messageDTO.setText(message.getText());
-            messageDTO.setCreateDate(message.getCreateDate());
 
             UsersResource usersResource = keycloak.realm("appsdeveloperblog").users();
               String KId = message.getUser().getK_id();
             UserResource userResource = usersResource.get(KId);
-            messageDTO.setAuthor(userResource.toRepresentation().getEmail());
             Map<String, Object> map = new HashMap<>();
-            map.put("author", messageDTO.getAuthor());
-            map.put("text", messageDTO.getText());
-            map.put("createDate", messageDTO.getCreateDate());
-            messageDTOS.add(map);
+            map.put("author", userResource.toRepresentation().getEmail());
+            map.put("text",message.getText());
+            map.put("createDate",message.getCreateDate());
+            map.put("message_id", message.getId());
+            messages.add(map);
         }
 
-      return messageDTOS;
+      return messages;
     }
 }
