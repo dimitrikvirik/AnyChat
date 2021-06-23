@@ -31,13 +31,13 @@ public class MessageRestController {
 
     @PreAuthorize("hasRole('user')")
     @PostMapping("/send")
-    public String send(@RequestBody String text,  Principal principal){
+    public String send(@RequestBody String text, Principal principal){
         messageService.send(text, principal.getName());
         return "success";
     }
     @PreAuthorize("hasRole('admin')")
     @GetMapping("/all")
-    public List<Map<String, Object>> getAllMessage() throws Exception {
+    public List<MessageDTO> getAllMessage() throws Exception {
 
         var msgs =  messageFacade.getAll();
         System.out.println(msgs);

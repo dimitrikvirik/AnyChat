@@ -3,12 +3,12 @@ package git.dimitrikvirik.anychat.facade;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import git.dimitrikvirik.anychat.model.dto.MessageDTO;
 import git.dimitrikvirik.anychat.model.entity.Message;
-import git.dimitrikvirik.anychat.model.entity.User;
 import git.dimitrikvirik.anychat.service.MessageService;
 import git.dimitrikvirik.anychat.service.UserService;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,27 +20,23 @@ import java.util.Map;
 @Service
 public class MessageFacade {
     @Autowired
-    UserService userService;
-    @Autowired
     MessageService messageService;
     @Autowired
     Keycloak keycloak;
+    @Autowired
+    ObjectMapper objectMapper;
 
-    public List<Map<String, Object>> getAll() throws Exception {
+    public List<MessageDTO> getAll() throws Exception {
       List<Message> messageList = messageService.getAll();
-      List<Map<String,Object>> messages = new ArrayList<>();
-        ObjectMapper objectMapper=  new ObjectMapper();
+      List<MessageDTO> messages = new ArrayList<>();
         for (Message message : messageList) {
-
             UsersResource usersResource = keycloak.realm("appsdeveloperblog").users();
-              String KId = message.getUser().getK_id();
-            UserResource userResource = usersResource.get(KId);
-            Map<String, Object> map = new HashMap<>();
-            map.put("author", userResource.toRepresentation().getEmail());
-            map.put("text",message.getText());
-            map.put("createDate",message.getCreateDate());
-            map.put("message_id", message.getId());
-            messages.add(map);
+            UserResource userResource = usersResource.get(message.getUserKID());
+            UserRepresentation user = userResource.toRepresentation();
+
+            MessageDTO messageDTO =  objectMapper.convertValue(message, MessageDTO.class);
+            messageDTO.setAuthor(user.getEmail());
+            messages.add(messageDTO);
         }
 
       return messages;

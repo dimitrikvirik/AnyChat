@@ -1,15 +1,16 @@
 package git.dimitrikvirik.anychat.model.dto;
 
-import lombok.*;
-
-import java.util.Objects;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserDTO {
-    private String username;
-    private String firstname;
-    private String lastname;
-    private int age;
+    private String name;
+    private String country;
+    private String city;
+    private String phone;
+    private String email;
 }

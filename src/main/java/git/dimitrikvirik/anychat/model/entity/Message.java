@@ -26,8 +26,8 @@ public class Message {
     private final Date createDate = new Date();
     @Column(name = "edit_date")
     private Date editDate = new Date();
-
-
-    @ManyToOne
-    private User user;
+    @Column(name  = "user_kid")
+    private String userKID;
+    @Column(name = "test")
+    private int test;
 }
